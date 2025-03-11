@@ -4,7 +4,9 @@
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     />
-    <CustomerTable :interaction-id="currentInteraction?.interactionId"></CustomerTable>
+    <link rel="stylesheet" href="https://drgreendj.github.io/style.css" />
+
+    <HomeComponent></HomeComponent>
   </main>
 </template>
 
@@ -17,11 +19,9 @@ const props = defineProps<{
 import { Desktop } from '@wxcc-desktop/sdk'
 import type { Service } from '@wxcc-desktop/sdk-types'
 import { StoredData } from './storage/stored-data'
-import { ref } from 'vue'
-import CustomerTable from './components/CustomerTable.vue'
 import { MerkurRequestHandler } from './handlers/merkur-request-handler'
-
-const currentInteraction = ref<InteractionData>()
+import HomeComponent from './components/HomeComponent.vue'
+import { ContactEventHandler } from './handlers/contact-event-handler'
 
 if (!StoredData.isInitialized) {
   console.error('Initializing gadget')
@@ -41,8 +41,6 @@ if (!StoredData.isInitialized) {
   _setupEventListeners()
 
   StoredData.isInitialized = true
-} else {
-  currentInteraction.value = StoredData.getMostRecentInteraction()
 }
 
 function _setupEventListeners(): void {
@@ -51,34 +49,50 @@ function _setupEventListeners(): void {
     (contact: Service.Aqm.Contact.AgentContact) => {
       console.error('eAgentOfferContact', contact)
 
-      navigator.clipboard.writeText(JSON.stringify(contact))
-
       try {
-        const agentId = contact.data.agentId
-        const participants = contact.data.interaction.participants
-
-        StoredData.agentEmailAddress = contact.data.agentEmailId
-
-        for (const participantId of Object.keys(participants)) {
-          console.error('participant check', participantId)
-
-          if (participantId != agentId) {
-            const queueName = contact.data.interaction.callProcessingDetails.virtualTeamName
-
-            currentInteraction.value = StoredData.addInteraction(
-              contact.data.interactionId,
-              participantId,
-              queueName,
-            )
-
-            searchCustomer(participantId)
-          }
-        }
+        ContactEventHandler.handleContactOffered(contact)
       } catch (ex) {
         console.error('Error while setting caller data', ex)
       }
     },
   )
+
+  Desktop.agentContact.addEventListener(
+    'eAgentContactAssigned',
+    (contact: Service.Aqm.Contact.AgentContact) => {
+      console.error('eAgentContactAssigned', contact)
+
+      try {
+        ContactEventHandler.handleContactAdded(contact)
+      } catch (ex) {
+        console.error('Error while processing AgentContactAssigned', ex)
+      }
+    },
+  )
+
+  Desktop.agentContact.addEventListener(
+    'eAgentContactEnded',
+    (contact: Service.Aqm.Contact.AgentContact) => {
+      console.error('NTS DEBUG: AgentContact eAgentContactEnded: ', contact)
+      ContactEventHandler.handleContactRemoved(contact)
+    },
+  )
+
+  // for already existing contacts when page is loaded
+  Desktop.agentContact.addEventListener(
+    'eAgentContact',
+    (contact: Service.Aqm.Contact.AgentContact) => {
+      try {
+        ContactEventHandler.handleContact(contact)
+      } catch (ex) {
+        console.error('Error while setting current items', ex)
+      }
+    },
+  )
+
+  Desktop.agentStateInfo.addEventListener('updated', (data) => {
+    console.error('agentStateInfo updated', data)
+  })
 
   const eventsToSubscribe: (
     | 'eAgentOfferConsult'
@@ -95,22 +109,26 @@ function _setupEventListeners(): void {
     'eAgentConsultCreated',
     'eAgentConsultConferenced',
     'eAgentContactAssigned',
-    'eAgentContact',
     'eAgentConsultFailed',
     'eAgentConsultEndFailed',
   ]
 
   eventsToSubscribe.forEach((eventName) => {
-    Desktop.agentContact.addEventListener(
-      eventName,
-      (contact: Service.Aqm.Contact.AgentContact) => {
-        console.error(eventName, contact)
-      },
-    )
-  })
+    console.error('adding listener', eventName)
 
-  Desktop.agentContact.addEventListener('eAgentContactEnded', (msg) => {
-    console.error('NTS DEBUG: AgentContact eAgentContactEnded: ', msg)
+    try {
+      Desktop.agentContact.addEventListener(
+        eventName,
+        (contact: Service.Aqm.Contact.AgentContact) => {
+          try {
+            console.error('event fired', eventName)
+            console.error(eventName, contact)
+          } catch {}
+        },
+      )
+    } catch (ex) {
+      console.error('Error while adding listener for ' + eventName, ex)
+    }
   })
 }
 </script>

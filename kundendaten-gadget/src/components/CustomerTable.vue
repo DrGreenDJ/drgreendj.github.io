@@ -26,7 +26,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="zipCode of customerSearchResult.keys()" :key="zipCode">
+            <tr v-for="zipCode of [...customerSearchResult.keys()]" :key="zipCode">
               <td>{{ zipCode }}</td>
               <td>
                 <table class="table center table-striped table-inverse" style="overflow-y: scroll">
@@ -63,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import type { MerkurBoosterData } from '../custom-types/customer-data.ts'
 import { StoredData } from '@/storage/stored-data.ts'
 import { MerkurRequestHandler } from '@/handlers/merkur-request-handler.ts'
@@ -82,7 +82,13 @@ watch(search, () => {
     return
   }
 
-  customerSearchResult.value = MerkurRequestHandler.searchCustomer(search.value)
+  MerkurRequestHandler.searchCustomerAsync(search.value).then(
+    (value: Map<string, MerkurBoosterData[]>) => {
+      customerSearchResult.value = value
+
+      console.error('search result from merkur', customerSearchResult.value)
+    },
+  )
 })
 
 function selectCustomer(customer: MerkurBoosterData): void {
@@ -106,8 +112,19 @@ function selectCustomer(customer: MerkurBoosterData): void {
     agentContact.queueName,
     agentContact.fromAddress,
     props.conversationUuid,
+    agentContact.mediaType === 'telephony',
   )
 
   StoredData.setSelectedCustomer(agentContact.interactionId, customer)
 }
+
+onMounted(() => {
+  if (StoredData.currentAgentContact !== null) {
+    console.error('setting customer result', StoredData.currentAgentContact.customers)
+
+    customerSearchResult.value = StoredData.currentAgentContact.customers
+
+    console.error('search result from contact', customerSearchResult.value)
+  }
+})
 </script>

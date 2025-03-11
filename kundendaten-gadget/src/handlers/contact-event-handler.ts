@@ -4,39 +4,55 @@ import type { Service } from '@wxcc-desktop/sdk-types'
 import { MerkurRequestHandler } from './merkur-request-handler'
 
 export class ContactEventHandler {
-  public handleContact(contact: Service.Aqm.Contact.AgentContact): void {
+  public static handleContact(contact: Service.Aqm.Contact.AgentContact): void {
     console.error('handleContact', contact)
+
+    this._checkMailAddress(contact)
 
     const agentContact = new AgentContactWrapper(contact)
 
     if (!agentContact.conversationUuid) {
-      console.log('Discarding call because of missing conversation UUID', contact)
-
-      return
+      // only used for now, as LIWEST needs to set htpps
+      // identify happens in stored-data.ts
+      // console.log('Discarding call because of missing conversation UUID', contact)
+      // return
     }
 
-    if (agentContact.state === 'new') {
-      this._handleContactOffered(contact)
-    } else if (agentContact.state === 'connected') {
-      this._handleContactAdded(agentContact)
+    if (agentContact.state === 'new' || agentContact.state === 'connected') {
+      this.handleContactOffered(contact)
+
+      if (agentContact.state === 'connected' && agentContact.mediaType === 'telephony') {
+        console.error('mock pickup', contact)
+        this.handleContactAdded(contact)
+      }
     } else {
-      this._handleContactRemoved(contact)
+      this.handleContactRemoved(contact)
     }
   }
 
-  private _handleContactOffered(contact: Service.Aqm.Contact.AgentContact): void {
-    const agentContact = StoredData.addAgentContact(contact)
+  public static handleContactOffered(contact: Service.Aqm.Contact.AgentContact): void {
+    console.error('handle contact offered')
 
-    agentContact.contactIncoming = true
+    this._checkMailAddress(contact)
 
-    MerkurRequestHandler.putActive(agentContact)
+    StoredData.addAgentContact(contact)
   }
 
-  private _handleContactAdded(agentContact: AgentContactWrapper): void {
-    StoredData.setAgentContactIsActive(agentContact.interactionId)
+  public static handleContactAdded(contact: Service.Aqm.Contact.AgentContact): void {
+    console.error('handle contact added')
+
+    this._checkMailAddress(contact)
+
+    const agentContact = new AgentContactWrapper(contact)
+
+    StoredData.setCurrentAgentContact(agentContact.interactionId)
   }
 
-  private _handleContactRemoved(contact: Service.Aqm.Contact.AgentContact): void {
+  public static handleContactRemoved(contact: Service.Aqm.Contact.AgentContact): void {
+    console.error('handle contact ended')
+
+    this._checkMailAddress(contact)
+
     const wrapper = new AgentContactWrapper(contact)
 
     const agentContact = StoredData.getAgentContactViaInteractionId(contact.data.interactionId)
@@ -51,13 +67,23 @@ export class ContactEventHandler {
     }
 
     try {
-      if (agentContact.state === 'new') {
+      if (new AgentContactWrapper(contact).state === 'new') {
         MerkurRequestHandler.finishContact(agentContact)
       }
 
-      StoredData.removeAgentContact(agentContact.conversationUuid)
+      StoredData.removeAgentContact(agentContact.interactionId)
     } catch (ex) {
       console.error('Error during handleCallRemoved', ex)
+    }
+  }
+
+  private static _checkMailAddress(contact: Service.Aqm.Contact.AgentContact): void {
+    const cData: Record<string, unknown> = contact.data
+
+    for (const key of Object.keys(cData)) {
+      if (key === 'agentEmailId') {
+        StoredData.agentEmailAddress = cData[key] as string
+      }
     }
   }
 }

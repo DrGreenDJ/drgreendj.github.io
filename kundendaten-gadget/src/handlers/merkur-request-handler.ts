@@ -2,11 +2,15 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 
 import { StoredData } from '@/storage/stored-data'
 import type { AgentContactWrapper } from '@/custom-classes/agent-contact-wrapper'
-import type { CustomerSearchResult, MerkurBoosterData } from '@/custom-types/customer-data'
+import type {
+  CustomerSearchResult,
+  CustomerSetActiveResult,
+  MerkurBoosterData,
+} from '@/custom-types/customer-data'
 
 export class MerkurRequestHandler {
   private static _apiKey: string = ''
-  private static _apiUrl = 'https://contactcenter.atliwest.local/rest/v1/merkurbooster'
+  private static _apiUrl = 'https://contactcenter-test.atliwest.local/rest/v1/merkurbooster'
   private static get _apiConfigForGet(): AxiosRequestConfig {
     return {
       headers: {
@@ -32,34 +36,36 @@ export class MerkurRequestHandler {
   }
 
   public static putActive(contact: AgentContactWrapper): void {
+    console.error('putActive', contact)
+
     axios
       .put(
         `${this._apiUrl}/event/conversation/${contact.conversationUuid}/active`,
         contact.jsonPayload,
         this._apiConfig,
       )
-      .then((result: AxiosResponse<CustomerSearchResult>) => {
-        const parsedCustomerMap = this._getMerkurBoosterMapFromSearchResult(result.data)
+      .then((result: AxiosResponse<CustomerSetActiveResult>) => {
+        const noZipCodeMap = new Map<string, MerkurBoosterData[]>()
 
-        contact.addCustomers(parsedCustomerMap)
+        noZipCodeMap.set('', result.data.data)
+
+        console.error('setting customer map without zip code', noZipCodeMap)
+
+        contact.addCustomers(noZipCodeMap)
       })
   }
 
-  public static searchCustomer(searchValue: string): Map<string, MerkurBoosterData[]> {
-    const amendedCustomerDict = new Map<string, MerkurBoosterData[]>()
+  public static async searchCustomerAsync(
+    searchValue: string,
+  ): Promise<Map<string, MerkurBoosterData[]>> {
+    const getResult = axios.get(
+      `${this._apiUrl}/customer/search/all/${searchValue}?limit=20`,
+      this._apiConfigForGet,
+    ) as Promise<AxiosResponse<CustomerSearchResult>>
 
-    axios
-      .get(`${this._apiUrl}/customer/search/all/${searchValue}?limit=20`, this._apiConfigForGet)
-      .then((result: AxiosResponse<CustomerSearchResult>) => {
-        console.error('customer search result', result.data)
-
-        return this._getMerkurBoosterMapFromSearchResult(result.data)
-      })
-      .catch((reason) => {
-        console.error('Error while searching for customers', reason)
-      })
-
-    return amendedCustomerDict
+    return getResult.then((result: AxiosResponse<CustomerSearchResult>) =>
+      this._getMerkurBoosterMapFromSearchResult(result.data),
+    )
   }
 
   public static postCustomerData(
@@ -67,6 +73,7 @@ export class MerkurRequestHandler {
     queueName: string,
     fromAddress: string,
     conversationUuid: string,
+    isCall: boolean,
   ): void {
     StoredData.isLoading = true
 
@@ -77,9 +84,11 @@ export class MerkurRequestHandler {
       model: 'DefaultModel',
     })
 
+    const assignType = isCall ? '' : 'CONVERSATION_PHONE'
+
     axios
       .post(
-        `${this._apiUrl}/event/conversation/${conversationUuid}/customer/${customer.debitor_no}/assigntype/CONVERSATION_PHONE/assignidentifier/${fromAddress}/assign`,
+        `${this._apiUrl}/event/conversation/${conversationUuid}/customer/${customer.debitor_no}/assigntype/${assignType}/assignidentifier/${fromAddress}/assign`,
         data,
         this._apiConfig,
       )
@@ -125,16 +134,7 @@ export class MerkurRequestHandler {
 
     axios
       .post(url, agentContact.jsonPayload, this._apiConfig)
-      .then((response: AxiosResponse<CustomerSearchResult>) => {
-        const custData = this._getMerkurBoosterMapFromSearchResult(response.data)
-
-        agentContact.addCustomers(custData)
-
-        if (agentContact.hasSingleHit) {
-          // has to be the case, actually
-          agentContact.selectedCustomer = agentContact.singleHitCustomer
-        }
-      })
+      .then((response) => console.error('new customer response', response.data))
       .finally(() => {
         agentContact.areCaseLinksLoading = false
       })
@@ -156,9 +156,28 @@ export class MerkurRequestHandler {
           `?customernumber=${agentContact.selectedCustomer?.contract_number ?? ''}` +
           `&conversationtype=${agentContact.conversationTypeNumber}`,
         data,
+        this._apiConfig,
       )
       .then((response: AxiosResponse<unknown>) => console.log(methodName, response))
       .catch((reason: unknown) => console.error(methodName, reason))
+  }
+
+  public static setConversationUUid(agentContact: AgentContactWrapper): void {
+    let url = '/customer/'
+
+    if (agentContact.mediaType === 'email') {
+      url += 'email'
+    } else {
+      url += 'phone'
+    }
+
+    url += '/' + agentContact.fromAddress + '/identify'
+
+    axios
+      .get(this._apiUrl + url, this._apiConfigForGet)
+      .then((value: AxiosResponse<CustomerSearchResult>) => {
+        agentContact.setConversationUuid(value.data.conversation_uid)
+      })
   }
 
   private static _getMerkurBoosterMapFromSearchResult(
@@ -167,18 +186,20 @@ export class MerkurRequestHandler {
     const amendedCustomerDict = new Map<string, MerkurBoosterData[]>()
 
     try {
-      const custData = searchResult.data
+      const custData = searchResult.data as Record<string, unknown>
+
+      console.error('custData', custData)
 
       Object.keys(custData).forEach((zipCode: string) => {
-        if (custData.hasOwnProperty(zipCode)) {
-          const key = (zipCode ?? '').length === 0 ? 'Ohne TO-Zuweisung' : zipCode
+        const key = (zipCode ?? '').length === 0 ? 'Ohne TO-Zuweisung' : zipCode
 
-          amendedCustomerDict.set(key, custData[zipCode])
-        }
+        amendedCustomerDict.set(key, custData[zipCode] as MerkurBoosterData[])
       })
     } catch (ex) {
       console.error('Error while parsing CustomerSearchResult', ex)
     }
+
+    console.error('returning', amendedCustomerDict)
 
     return amendedCustomerDict
   }

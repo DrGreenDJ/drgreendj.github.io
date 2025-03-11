@@ -42,6 +42,21 @@ export type CustomerSearchResult = {
   data: object
 }
 
+export type CustomerSetActiveResult = {
+  code: number
+  description: string
+  hit_count: number
+  business: boolean
+  vip: boolean
+  ruzu: boolean
+  incident_id: number
+  priority: number
+  notifiable: boolean
+  case_links: MerkurBoosterLinkData[]
+  conversation_uid: string
+  data: MerkurBoosterData[]
+}
+
 export type CustomerSearchResultWithParsedData = CustomerSearchResult & {
   parsedData: MerkurBoosterData[]
 }

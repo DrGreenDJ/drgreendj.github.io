@@ -5,12 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "NODE_OPTIONS=\"--max-old-space-size=4092\" run-p type-check \"build-only {@}\" --",
+    "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "build-only": "NODE_OPTIONS=\"--max-old-space-size=4092\" vite build",
+    "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "clean-vite": "rm -rf node_modules/vite && rm -rf node_modules/vite-hot-client && rm -rf node_modules/@vitejs && rm -rf node_modules/vite-plugin-inspect && rm -rf node_modules/vite-plugin-vue-devtools && rm -rf node_modules/vite-plugin-vue-inspector && rm -rf node_modules/.vite-temp && rm -rf node_modules/.vite"
   },
   "dependencies": {
     "@uuip/unified-ui-platform-sdk": "^1.3.25",
@@ -33,7 +34,7 @@
     "npm-run-all2": "^7.0.2",
     "prettier": "^3.5.1",
     "typescript": "~5.7.3",
-    "vite": "^6.1.0",
+    "vite": "^6.2.1",
     "vite-plugin-vue-devtools": "^7.7.2",
     "vue-tsc": "^2.2.2"
   }

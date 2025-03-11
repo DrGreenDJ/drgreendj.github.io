@@ -7,9 +7,6 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  build: {
-    cssCodeSplit: false,
-  },
   plugins: [vue(), vueJsx(), vueDevTools()],
   resolve: {
     alias: {

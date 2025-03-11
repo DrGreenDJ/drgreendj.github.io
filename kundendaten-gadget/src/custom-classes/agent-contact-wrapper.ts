@@ -11,11 +11,16 @@ export class AgentContactWrapper {
     return this._contact.data.interaction.callProcessingDetails.ROUTING_TYPE
   }
 
+  // public get conversationUuid(): string {
+  //   return (
+  //     this._contact.data.interaction.callAssociatedData?.HTTP_Identify_conversationUUID?.toString() ??
+  //     ''
+  //   )
+  // }
+
+  private _conversationUuid: string = ''
   public get conversationUuid(): string {
-    return (
-      this._contact.data.interaction.callAssociatedData?.HTTP_Identify_conversationUUID.toString() ??
-      ''
-    )
+    return this._conversationUuid
   }
 
   public get fromAddress(): string {
@@ -49,7 +54,7 @@ export class AgentContactWrapper {
     return JSON.stringify({
       channel: this._contact.data.interaction.mediaType,
       department: this.queueName,
-      agent: StoredData.agentEmailAddress,
+      agent: StoredData.crmLoginId,
       model: this._contact.data.interaction.mediaChannel,
     })
   }
@@ -85,6 +90,10 @@ export class AgentContactWrapper {
     }
 
     return returnValue
+  }
+
+  public get mailLabel(): string {
+    return this.customerString
   }
 
   public get customerString(): string {
@@ -132,6 +141,10 @@ export class AgentContactWrapper {
     return this.singleHitCustomer !== null
   }
 
+  public get eventType(): string {
+    return this._contact.data.type
+  }
+
   //#region enriched data
   public customers: Map<string, MerkurBoosterData[]> = new Map<string, MerkurBoosterData[]>()
   public selectedCustomer: MerkurBoosterData | null = null
@@ -149,12 +162,41 @@ export class AgentContactWrapper {
   constructor(private _contact: Service.Aqm.Contact.AgentContact) {}
 
   public addCustomers(newEntries: Map<string, MerkurBoosterData[]>): void {
+    console.error('assigning customers', newEntries)
+
     newEntries.forEach((value: MerkurBoosterData[], key: string) => {
       if (this.customers.has(key)) {
-        this.customers.set(key, this.customers.get(key)!.concat(value))
+        const foundCustomers = this.customers.get(key)
+
+        if (!foundCustomers?.concat) {
+          console.error('customers has key but no concat', foundCustomers)
+        }
+
+        this.customers.set(key, foundCustomers!.concat(value))
       } else {
         this.customers.set(key, value)
       }
     })
+  }
+
+  // ONLY FOR TEST, needs to be removed
+  public setConversationUuid(value: string): void {
+    if (this._contact.data.interaction.callAssociatedData) {
+      this._contact.data.interaction.callAssociatedData.HTTP_Identify_conversationUUID = {
+        displayName: 'HTTP_Identify_conversationUUID',
+        name: 'HTTP_Identify_conversationUUID',
+        type: 'STRING',
+        secureKeyId: '',
+        secureKeyVersion: 0,
+        isSecure: false,
+        agentEditable: false,
+        agentViewable: true,
+        value: value,
+      }
+    }
+
+    this._conversationUuid = value
+
+    console.error('set to', this._conversationUuid)
   }
 }

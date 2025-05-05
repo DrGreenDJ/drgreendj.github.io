@@ -1,4 +1,4 @@
-customElements.define("kdg-header", HeaderComponent);
+window.customElements.define("kdg-header", HeaderComponent);
 
 class HeaderComponent extends HTMLElement {
 	

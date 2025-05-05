@@ -152,6 +152,8 @@ class HeaderComponent extends HTMLElement {
 		for (var i = 0; i < liNodes.length; i++) {
 			
 		  var li = liNodes[i];
+		  
+		  console.error('checking li element', li);
 
 		  var mdTooltip = Array.from(li.childNodes).find(cNode =>
 			  cNode.nodeName.toLowerCase() === 'md-tooltip' && cNode.attributes.getNamedItem('message') &&
@@ -180,6 +182,8 @@ class HeaderComponent extends HTMLElement {
 
 				hElement.click();
 				
+				return;
+				
 			  } catch (ex) {
 				  
 				console.error('error during click', ex);
@@ -187,6 +191,9 @@ class HeaderComponent extends HTMLElement {
 			}
 		  }
 		}
+		
+		console.error('Unable to find KDG!');
+		
 	  } catch (ex) {
 		console.error('error while attempting to activate KDG', ex);
 	  }

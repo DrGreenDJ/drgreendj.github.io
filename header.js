@@ -1,5 +1,3 @@
-window.customElements.define("kdg-header", HeaderComponent);
-
 class HeaderComponent extends HTMLElement {
 	
 	constructor() {
@@ -194,3 +192,6 @@ class HeaderComponent extends HTMLElement {
 	  }
 	}
 }
+
+console.error('Script called');
+window.customElements.define("kdg-header", HeaderComponent);

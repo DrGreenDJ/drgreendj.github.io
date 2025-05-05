@@ -181,7 +181,9 @@ class HeaderComponent extends HTMLElement {
 				hElement = finallyFound;
 
 				hElement.click();
-				
+
+				console.error('found and clicked');
+				  
 				return;
 				
 			  } catch (ex) {

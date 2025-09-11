@@ -6021,12 +6021,7 @@ function patchDOMProp(el, key, value, parentComponent, attrName) {
   }
   needRemove && el.removeAttribute(attrName || key);
 }
-function addEventListener(el, event, handler, options) {
-  el.addEventListener(event, handler, options);
-}
-function removeEventListener(el, event, handler, options) {
-  el.removeEventListener(event, handler, options);
-}
+
 const veiKey = Symbol("_vei");
 function patchEvent(el, rawName, prevValue, nextValue, instance = null) {
   const invokers = el[veiKey] || (el[veiKey] = {});

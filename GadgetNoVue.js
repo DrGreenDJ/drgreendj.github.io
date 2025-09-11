@@ -1,6 +1,4 @@
-/* custom listener */
-
-/* including vue */
+/* explicit vue prod */
 
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
@@ -6025,11 +6023,11 @@ function patchDOMProp(el, key, value, parentComponent, attrName) {
   }
   needRemove && el.removeAttribute(attrName || key);
 }
-function addEventListenerCustom(el, event, handler, options) {
-  el.addEventListenerCustom(event, handler, options);
+function addEventListener(el, event, handler, options) {
+  el.addEventListener(event, handler, options);
 }
-function removeEventListenerCustom(el, event, handler, options) {
-  el.removeEventListenerCustom(event, handler, options);
+function removeEventListener(el, event, handler, options) {
+  el.removeEventListener(event, handler, options);
 }
 const veiKey = Symbol("_vei");
 function patchEvent(el, rawName, prevValue, nextValue, instance = null) {
@@ -6044,9 +6042,9 @@ function patchEvent(el, rawName, prevValue, nextValue, instance = null) {
         nextValue,
         instance
       );
-      addEventListenerCustom(el, name, invoker, options);
+      addEventListener(el, name, invoker, options);
     } else if (existingInvoker) {
-      removeEventListenerCustom(el, name, existingInvoker, options);
+      removeEventListener(el, name, existingInvoker, options);
       invokers[rawName] = void 0;
     }
   }
@@ -6513,7 +6511,7 @@ const vModelText = {
   created(el, { modifiers: { lazy, trim: trim2, number } }, vnode) {
     el[assignKey] = getModelAssigner(vnode);
     const castToNumber = number || vnode.props && vnode.props.type === "number";
-    addEventListenerCustom(el, lazy ? "change" : "input", (e) => {
+    addEventListener(el, lazy ? "change" : "input", (e) => {
       if (e.target.composing) return;
       let domValue = el.value;
       if (trim2) {
@@ -6525,14 +6523,14 @@ const vModelText = {
       el[assignKey](domValue);
     });
     if (trim2) {
-      addEventListenerCustom(el, "change", () => {
+      addEventListener(el, "change", () => {
         el.value = el.value.trim();
       });
     }
     if (!lazy) {
-      addEventListenerCustom(el, "compositionstart", onCompositionStart);
-      addEventListenerCustom(el, "compositionend", onCompositionEnd);
-      addEventListenerCustom(el, "change", onCompositionEnd);
+      addEventListener(el, "compositionstart", onCompositionStart);
+      addEventListener(el, "compositionend", onCompositionEnd);
+      addEventListener(el, "change", onCompositionEnd);
     }
   },
   // set value on mounted so it's after min/max for type="range"
@@ -6563,7 +6561,7 @@ const vModelCheckbox = {
   deep: true,
   created(el, _, vnode) {
     el[assignKey] = getModelAssigner(vnode);
-    addEventListenerCustom(el, "change", () => {
+    addEventListener(el, "change", () => {
       const modelValue = el._modelValue;
       const elementValue = getValue(el);
       const checked = el.checked;
@@ -6618,7 +6616,7 @@ const vModelSelect = {
   deep: true,
   created(el, { value, modifiers: { number } }, vnode) {
     const isSetModel = isSet(value);
-    addEventListenerCustom(el, "change", () => {
+    addEventListener(el, "change", () => {
       const selectedVal = Array.prototype.filter.call(el.options, (o) => o.selected).map(
         (o) => number ? looseToNumber(getValue(o)) : getValue(o)
       );
@@ -6807,7 +6805,7 @@ function requireDist() {
               false !== (o2 = t2(n3, i2, e3)) && (r2[i2] = o2 || n3);
             }), Object.defineProperties(e3, r2);
           }, U = "abcdefghijklmnopqrstuvwxyz", q = { DIGIT: "0123456789", ALPHA: U, ALPHA_DIGIT: U + U.toUpperCase() + "0123456789" };
-          const F = l("AsyncFunction"), B = (z = "function" == typeof r, H = v(x.postMessage), z ? r : H ? (J = "axios@" + Math.random(), Z = [], x.addEventListenerCustom("message", ({ source: e3, data: t2 }) => {
+          const F = l("AsyncFunction"), B = (z = "function" == typeof r, H = v(x.postMessage), z ? r : H ? (J = "axios@" + Math.random(), Z = [], x.addEventListener("message", ({ source: e3, data: t2 }) => {
             e3 === x && t2 === J && Z.length && Z.shift()();
           }, false), (e3) => {
             Z.push(e3), x.postMessage(J, "*");
@@ -7099,12 +7097,12 @@ function requireDist() {
               emit(e4, ...t4) {
                 this.loggerEmitter.emit(e4, ...t4);
               }
-              addEventListenerCustom(e4, t4) {
+              addEventListener(e4, t4) {
                 return this.loggerEmitter.on(e4, t4), () => {
-                  this.removeEventListenerCustom(e4, t4);
+                  this.removeEventListener(e4, t4);
                 };
               }
-              removeEventListenerCustom(e4, t4) {
+              removeEventListener(e4, t4) {
                 this.loggerEmitter.off(e4, t4);
               }
             };
@@ -7220,7 +7218,7 @@ function requireDist() {
                 }
               }
               addLogger(e4) {
-                this.loggers.set(e4.prefix, e4), e4.removeEventListenerCustom("add", this.onLoggerAddRecord), e4.addEventListenerCustom("add", this.onLoggerAddRecord);
+                this.loggers.set(e4.prefix, e4), e4.removeEventListener("add", this.onLoggerAddRecord), e4.addEventListener("add", this.onLoggerAddRecord);
               }
               getAllLogsJsonUrl() {
                 return r2.getLogsUrl(r2.getLogsReadableJson(this.getLogObjectFromString()));
@@ -7603,13 +7601,13 @@ function requireDist() {
               emit(e4, ...t4) {
                 this.hubEmitter.emit(e4, ...t4);
               }
-              addEventListenerCustom(e4, t4) {
+              addEventListener(e4, t4) {
                 this.hubEmitter.on(e4, t4);
               }
               addOnceEventListener(e4, t4) {
                 this.hubEmitter.once(e4, t4);
               }
-              removeEventListenerCustom(e4, t4) {
+              removeEventListener(e4, t4) {
                 this.hubEmitter.off(e4, t4);
               }
               removeAllEventListeners() {
@@ -7641,10 +7639,10 @@ function requireDist() {
                     const e4 = (e5, n5, r3) => {
                       this.timestamp in e5 && (this._status = n5, this._reason = r3, n5 === t3.Status.Removed && (this.unbindItemHubListeners(), this.removeAllEventListeners()), this.emit("statusUpdate", n5, r3));
                     };
-                    this._serviceHubAdapter.addEventListenerCustom("statusServiceUpdateResponse", e4);
+                    this._serviceHubAdapter.addEventListener("statusServiceUpdateResponse", e4);
                     const n4 = () => {
                       var t4;
-                      null === (t4 = this._serviceHubAdapter) || void 0 === t4 || t4.removeEventListenerCustom("statusServiceUpdateResponse", e4);
+                      null === (t4 = this._serviceHubAdapter) || void 0 === t4 || t4.removeEventListener("statusServiceUpdateResponse", e4);
                     };
                     this._serviceHubSubscriptions.push(n4);
                   }
@@ -7652,10 +7650,10 @@ function requireDist() {
                     const e4 = (e5, t5) => {
                       this.timestamp in e5 && (this._mode = t5, this.emit("modeUpdate", t5));
                     };
-                    this._serviceHubAdapter.addEventListenerCustom("modeStatusUpdateResponse", e4);
+                    this._serviceHubAdapter.addEventListener("modeStatusUpdateResponse", e4);
                     const t4 = () => {
                       var t5;
-                      null === (t5 = this._serviceHubAdapter) || void 0 === t5 || t5.removeEventListenerCustom("modeStatusUpdateResponse", e4);
+                      null === (t5 = this._serviceHubAdapter) || void 0 === t5 || t5.removeEventListener("modeStatusUpdateResponse", e4);
                     };
                     this._serviceHubSubscriptions.push(t4);
                   }
@@ -7673,13 +7671,13 @@ function requireDist() {
               emit(e4, ...t4) {
                 this._itemEmitter.emit(e4, ...t4);
               }
-              addEventListenerCustom(e4, t4) {
+              addEventListener(e4, t4) {
                 this._itemEmitter.on(e4, t4);
               }
               addOnceEventListener(e4, t4) {
                 this._itemEmitter.once(e4, t4);
               }
-              removeEventListenerCustom(e4, t4) {
+              removeEventListener(e4, t4) {
                 this._itemEmitter.off(e4, t4);
               }
               removeAllEventListeners() {
@@ -7863,10 +7861,10 @@ function requireDist() {
               removeAll() {
                 return this.remove(this.status.added);
               }
-              addEventListenerCustom(e4, t4) {
+              addEventListener(e4, t4) {
                 this.emitter.on(e4, t4);
               }
-              removeEventListenerCustom(e4, t4) {
+              removeEventListener(e4, t4) {
                 this.emitter.off(e4, t4);
               }
               addOnceEventListener(e4, t4) {
@@ -7879,7 +7877,7 @@ function requireDist() {
                 this.emitter.emit(e4, ...t4);
               }
               bindServiceHubEvents() {
-                this.serviceHubAdapter.addEventListenerCustom("statusServiceUpdateRequest", (e4, n4, r3) => {
+                this.serviceHubAdapter.addEventListener("statusServiceUpdateRequest", (e4, n4, r3) => {
                   const i2 = Array.isArray(e4) ? e4 : [e4], o2 = i2.reduce((e5, t4) => (e5[t4.timestamp] = this.getNotificationStatus(t4), e5), {});
                   {
                     const e5 = i2.filter((e6) => (o2[e6.timestamp] === t3.Status.Activated || e6.mode !== t3.Mode.Silent) && n4 === t3.Status.Pended);
@@ -7901,7 +7899,7 @@ function requireDist() {
                     return (r4 === t3.Status.Pended || r4 === t3.Status.Activated || r4 === t3.Status.Deactivated) && n4 === t3.Status.Removed;
                   }).length && this.update("remove", r3, e4);
                 }), n3.STATUS_EVENTS.forEach((e4) => {
-                  this.addEventListenerCustom(e4, (t4, r3) => {
+                  this.addEventListener(e4, (t4, r3) => {
                     const i2 = n3.STATUS_EVENT_MAP[e4], o2 = t4.reduce((e5, t5) => (e5[t5.timestamp] = t5, e5), {});
                     this.serviceHubAdapter.emit("statusServiceUpdateResponse", o2, i2, r3);
                   });
@@ -7960,7 +7958,7 @@ const e=new Map,t=new Map,r=(e,t)=>
     return{expected:r+o,remainingDelay:o}},
     o=(e,t,r,i)=>{const s=performance.now();
         s>r?postMessage({id:null,method:"call",params:{timerId:t,timerType:i}}):e.set(t,setTimeout(o,r-s,e,t,r,i))};
-        addEventListenerCustom("message",(i=>{let{data:s}=i;try{if("clear"===s.method){const{id:r,params:{timerId:o,timerType:i}}=s;
+        addEventListener("message",(i=>{let{data:s}=i;try{if("clear"===s.method){const{id:r,params:{timerId:o,timerType:i}}=s;
         if("interval"===i)
         (t=>{const r=e.get(t);
         if(void 0===r)
@@ -8000,7 +7998,7 @@ const e=new Map,t=new Map,r=(e,t)=>
                 for (; n4.has(i3); ) i3 = Math.floor(Math.random() * V);
                 return e5(n4, i3);
               })((s2 = o2, (e5, t5) => (s2.set(e5, t5), t5)), o2);
-              return i2.addEventListenerCustom("message", ({ data: e5 }) => {
+              return i2.addEventListener("message", ({ data: e5 }) => {
                 if (void 0 !== (i3 = e5).method && "call" === i3.method) {
                   const { params: { timerId: i4, timerType: o3 } } = e5;
                   if ("interval" === o3) {
@@ -10820,7 +10818,7 @@ const e=new Map,t=new Map,r=(e,t)=>
                 setTimeout(p2, 0, e4);
               } : (s = "setImmediate$" + Math.random() + "$", a = function(t3) {
                 t3.source === e3 && "string" == typeof t3.data && 0 === t3.data.indexOf(s) && p2(+t3.data.slice(s.length));
-              }, e3.addEventListenerCustom ? e3.addEventListenerCustom("message", a, false) : e3.attachEvent("onmessage", a), r = function(t3) {
+              }, e3.addEventListener ? e3.addEventListener("message", a, false) : e3.attachEvent("onmessage", a), r = function(t3) {
                 e3.postMessage(s + t3, "*");
               }), f.setImmediate = function(e4) {
                 "function" != typeof e4 && (e4 = new Function("" + e4));
@@ -11827,8 +11825,8 @@ const e=new Map,t=new Map,r=(e,t)=>
                   o2(new t2.DOMException("Aborted", "AbortError"));
                 }, a2.open(s2.method, s2.url, true), "include" === s2.credentials ? a2.withCredentials = true : "omit" === s2.credentials && (a2.withCredentials = false), "responseType" in a2 && i2 && (a2.responseType = "blob"), s2.headers.forEach(function(e4, t3) {
                   a2.setRequestHeader(t3, e4);
-                }), s2.signal && (s2.signal.addEventListenerCustom("abort", u2), a2.onreadystatechange = function() {
-                  4 === a2.readyState && s2.signal.removeEventListenerCustom("abort", u2);
+                }), s2.signal && (s2.signal.addEventListener("abort", u2), a2.onreadystatechange = function() {
+                  4 === a2.readyState && s2.signal.removeEventListener("abort", u2);
                 }), a2.send(void 0 === s2._bodyInit ? null : s2._bodyInit);
               });
             }
@@ -12453,7 +12451,7 @@ const e=new Map,t=new Map,r=(e,t)=>
             const s2 = _.from(r2.headers).normalize();
             let a2, u2, c2, l2, d2, { responseType: f2, onUploadProgress: h2, onDownloadProgress: v2 } = r2;
             function m2() {
-              l2 && l2(), d2 && d2(), r2.cancelToken && r2.cancelToken.unsubscribe(a2), r2.signal && r2.signal.removeEventListenerCustom("abort", a2);
+              l2 && l2(), d2 && d2(), r2.cancelToken && r2.cancelToken.unsubscribe(a2), r2.signal && r2.signal.removeEventListener("abort", a2);
             }
             let y2 = new XMLHttpRequest();
             function w2() {
@@ -12477,9 +12475,9 @@ const e=new Map,t=new Map,r=(e,t)=>
               r2.timeoutErrorMessage && (t3 = r2.timeoutErrorMessage), n2(new p2.a(t3, i2.clarifyTimeoutError ? p2.a.ETIMEDOUT : p2.a.ECONNABORTED, e2, y2)), y2 = null;
             }, void 0 === o2 && s2.setContentType(null), "setRequestHeader" in y2 && i.a.forEach(s2.toJSON(), function(e3, t3) {
               y2.setRequestHeader(t3, e3);
-            }), i.a.isUndefined(r2.withCredentials) || (y2.withCredentials = !!r2.withCredentials), f2 && "json" !== f2 && (y2.responseType = r2.responseType), v2 && ([c2, d2] = F(v2, true), y2.addEventListenerCustom("progress", c2)), h2 && y2.upload && ([u2, l2] = F(h2), y2.upload.addEventListenerCustom("progress", u2), y2.upload.addEventListenerCustom("loadend", l2)), (r2.cancelToken || r2.signal) && (a2 = (t3) => {
+            }), i.a.isUndefined(r2.withCredentials) || (y2.withCredentials = !!r2.withCredentials), f2 && "json" !== f2 && (y2.responseType = r2.responseType), v2 && ([c2, d2] = F(v2, true), y2.addEventListener("progress", c2)), h2 && y2.upload && ([u2, l2] = F(h2), y2.upload.addEventListener("progress", u2), y2.upload.addEventListener("loadend", l2)), (r2.cancelToken || r2.signal) && (a2 = (t3) => {
               y2 && (n2(!t3 || t3.type ? new P(null, e2, y2) : t3), y2.abort(), y2 = null);
-            }, r2.cancelToken && r2.cancelToken.subscribe(a2), r2.signal && (r2.signal.aborted ? a2() : r2.signal.addEventListenerCustom("abort", a2)));
+            }, r2.cancelToken && r2.cancelToken.subscribe(a2), r2.signal && (r2.signal.aborted ? a2() : r2.signal.addEventListener("abort", a2)));
             const b2 = function(e3) {
               const t3 = /^([-+\w]{1,25})(:?\/\/|:)/.exec(e3);
               return t3 && t3[1] || "";
@@ -12503,10 +12501,10 @@ const e=new Map,t=new Map,r=(e,t)=>
             }, t2);
             const a2 = () => {
               e2 && (s2 && clearTimeout(s2), s2 = null, e2.forEach((e3) => {
-                e3.unsubscribe ? e3.unsubscribe(o2) : e3.removeEventListenerCustom("abort", o2);
+                e3.unsubscribe ? e3.unsubscribe(o2) : e3.removeEventListener("abort", o2);
               }), e2 = null);
             };
-            e2.forEach((e3) => e3.addEventListenerCustom("abort", o2));
+            e2.forEach((e3) => e3.addEventListener("abort", o2));
             const { signal: u2 } = r2;
             return u2.unsubscribe = () => i.a.asap(a2), u2;
           }
@@ -13013,7 +13011,7 @@ const e=new Map,t=new Map,r=(e,t)=>
           cleanup() {
             this.removeAllEventListeners(), this.aqmServiceEntity = void 0, this.aqmServiceEntityString = void 0, this.isInited = false;
           }
-          _addEventListenerCustom(e2, t2, n2) {
+          _addEventListener(e2, t2, n2) {
             var r2, i2, o2;
             const s2 = n2 ? "listenersOnce" : "listeners";
             this[s2].has(e2) || this[s2].set(e2, /* @__PURE__ */ new Map());
@@ -13036,7 +13034,7 @@ const e=new Map,t=new Map,r=(e,t)=>
             } else null === (i2 = this.logger) || void 0 === i2 || i2.warn(`EventName "${e2.toString()}" is not recognized, so won't be subscribed...`);
             else null === (o2 = this.logger) || void 0 === o2 || o2.error(`"${this.aqmServiceEntityString}" is not ready yet. .init(...) first...`);
           }
-          _removeEventListenerCustom(e2, t2, n2) {
+          _removeEventListener(e2, t2, n2) {
             const r2 = n2 ? "listenersOnce" : "listeners";
             if (this[r2].has(e2)) {
               const n3 = this[r2].get(e2);
@@ -13048,17 +13046,17 @@ const e=new Map,t=new Map,r=(e,t)=>
               }
             }
           }
-          addEventListenerCustom(e2, t2) {
-            this._addEventListenerCustom(e2, t2, false);
+          addEventListener(e2, t2) {
+            this._addEventListener(e2, t2, false);
           }
           addOnceEventListener(e2, t2) {
-            this._addEventListenerCustom(e2, t2, true);
+            this._addEventListener(e2, t2, true);
           }
-          removeEventListenerCustom(e2, t2) {
-            this._removeEventListenerCustom(e2, t2, false);
+          removeEventListener(e2, t2) {
+            this._removeEventListener(e2, t2, false);
           }
           removeOnceEventListener(e2, t2) {
-            this._removeEventListenerCustom(e2, t2, true);
+            this._removeEventListener(e2, t2, true);
           }
           removeAllEventListeners() {
             ["listeners", "listenersOnce"].forEach((e2) => {
@@ -13302,14 +13300,14 @@ const e=new Map,t=new Map,r=(e,t)=>
               if (this.checkService()) return null === (t2 = this.SERVICE) || void 0 === t2 ? void 0 : t2.aqm.contact.buddyAgentsV2(e2);
             });
           }
-          addEventListenerCustom(e2, t2) {
-            this.checkService() && this.aqmEvents.addEventListenerCustom(e2, t2);
+          addEventListener(e2, t2) {
+            this.checkService() && this.aqmEvents.addEventListener(e2, t2);
           }
           addOnceEventListener(e2, t2) {
             this.checkService() && this.aqmEvents.addOnceEventListener(e2, t2);
           }
-          removeEventListenerCustom(e2, t2) {
-            this.aqmEvents.removeEventListenerCustom(e2, t2);
+          removeEventListener(e2, t2) {
+            this.aqmEvents.removeEventListener(e2, t2);
           }
           removeOnceEventListener(e2, t2) {
             this.aqmEvents.removeOnceEventListener(e2, t2);
@@ -13470,10 +13468,10 @@ const e=new Map,t=new Map,r=(e,t)=>
               if (this.checkService()) return yield null === (t2 = this.SERVICE) || void 0 === t2 ? void 0 : t2.abs.fetchIdleCodes({ orgId: e2, accessType: "ALL" });
             });
           }
-          addEventListenerCustom(e2, t2) {
+          addEventListener(e2, t2) {
             this.checkService() && this.emitter.on(e2, t2);
           }
-          removeEventListenerCustom(e2, t2) {
+          removeEventListener(e2, t2) {
             this.checkService() && this.emitter.off(e2, t2);
           }
           removeAllEventListeners() {
@@ -13549,10 +13547,10 @@ const e=new Map,t=new Map,r=(e,t)=>
           get clientLocale() {
             return null != window.navigator.languages ? window.navigator.languages[0] : window.navigator.language;
           }
-          addEventListenerCustom(e2, t2) {
+          addEventListener(e2, t2) {
             this.emitter.on(e2, t2);
           }
-          removeEventListenerCustom(e2, t2) {
+          removeEventListener(e2, t2) {
             this.emitter.off(e2, t2);
           }
         }
@@ -13607,14 +13605,14 @@ const e=new Map,t=new Map,r=(e,t)=>
               if (this.checkService()) return null === (t2 = this.SERVICE) || void 0 === t2 ? void 0 : t2.aqm.dialer.updateCadVariables(e2);
             });
           }
-          addEventListenerCustom(e2, t2) {
-            this.checkService() && this.aqmEvents.addEventListenerCustom(e2, t2);
+          addEventListener(e2, t2) {
+            this.checkService() && this.aqmEvents.addEventListener(e2, t2);
           }
           addOnceEventListener(e2, t2) {
             this.checkService() && this.aqmEvents.addOnceEventListener(e2, t2);
           }
-          removeEventListenerCustom(e2, t2) {
-            this.aqmEvents.removeEventListenerCustom(e2, t2);
+          removeEventListener(e2, t2) {
+            this.aqmEvents.removeEventListener(e2, t2);
           }
           removeOnceEventListener(e2, t2) {
             this.aqmEvents.removeOnceEventListener(e2, t2);
@@ -13693,14 +13691,14 @@ const e=new Map,t=new Map,r=(e,t)=>
           cleanup() {
             this.aqmEvents.cleanup(), this.SERVICE = void 0, this.logger.info("Cleaned");
           }
-          addEventListenerCustom(e2, t2) {
-            this.checkService() && this.aqmEvents.addEventListenerCustom(e2, t2);
+          addEventListener(e2, t2) {
+            this.checkService() && this.aqmEvents.addEventListener(e2, t2);
           }
           addOnceEventListener(e2, t2) {
             this.checkService() && this.aqmEvents.addOnceEventListener(e2, t2);
           }
-          removeEventListenerCustom(e2, t2) {
-            this.aqmEvents.removeEventListenerCustom(e2, t2);
+          removeEventListener(e2, t2) {
+            this.aqmEvents.removeEventListener(e2, t2);
           }
           removeOnceEventListener(e2, t2) {
             this.aqmEvents.removeOnceEventListener(e2, t2);
@@ -13888,14 +13886,14 @@ const e=new Map,t=new Map,r=(e,t)=>
               if (this.checkService()) return null === (n2 = null === (t2 = this.SERVICE) || void 0 === t2 ? void 0 : t2.aqm.supervisor) || void 0 === n2 ? void 0 : n2.bargeIn(e2);
             });
           }
-          addEventListenerCustom(e2, t2) {
-            this.checkService() && this.aqmEvents.addEventListenerCustom(e2, t2);
+          addEventListener(e2, t2) {
+            this.checkService() && this.aqmEvents.addEventListener(e2, t2);
           }
           addOnceEventListener(e2, t2) {
             this.checkService() && this.aqmEvents.addOnceEventListener(e2, t2);
           }
-          removeEventListenerCustom(e2, t2) {
-            this.aqmEvents.removeEventListenerCustom(e2, t2);
+          removeEventListener(e2, t2) {
+            this.aqmEvents.removeEventListener(e2, t2);
           }
           removeOnceEventListener(e2, t2) {
             this.aqmEvents.removeOnceEventListener(e2, t2);
@@ -13962,14 +13960,14 @@ const e=new Map,t=new Map,r=(e,t)=>
               }
             });
           }
-          addEventListenerCustom(e2, t2) {
-            this.checkService() && this.aqmEvents.addEventListenerCustom(e2, t2);
+          addEventListener(e2, t2) {
+            this.checkService() && this.aqmEvents.addEventListener(e2, t2);
           }
           addOnceEventListener(e2, t2) {
             this.checkService() && this.aqmEvents.addOnceEventListener(e2, t2);
           }
-          removeEventListenerCustom(e2, t2) {
-            this.aqmEvents.removeEventListenerCustom(e2, t2);
+          removeEventListener(e2, t2) {
+            this.aqmEvents.removeEventListener(e2, t2);
           }
           removeOnceEventListener(e2, t2) {
             this.aqmEvents.removeOnceEventListener(e2, t2);
@@ -14083,9 +14081,9 @@ const e=new Map,t=new Map,r=(e,t)=>
           const n2 = new Q({ logger: ee }), r2 = new ie({ logger: oe, serviceChecker: a({ logger: oe }) }), o2 = new I({ logger: L, serviceChecker: a({ logger: L }) }), s2 = new B({ logger: z, serviceChecker: a({ logger: z }) }), u2 = new N({ logger: D, serviceChecker: a({ logger: D }), aqmEvents: x({ logger: M }) }), c2 = new G({ logger: Y, aqmEvents: x({ logger: $ }), serviceChecker: a({ logger: Y }) }), l2 = new le({ logger: de, aqmEvents: x({ logger: fe }), serviceChecker: a({ logger: de }) }), d2 = new te({ logger: ne, aqmEvents: x({ logger: re }), serviceChecker: a({ logger: ne }) }), f2 = new pe({ logger: ge, aqmEvents: x({ logger: ve }), serviceChecker: a({ logger: ge }) }), h2 = new K({ logger: X, serviceChecker: a({ logger: X }) }), p3 = new ae({ logger: ue });
           p3.init();
           const g2 = new ye({ logger: we, serviceChecker: a({ logger: we }) }), v2 = new Ee({ logger: Se, serviceChecker: a({ logger: Se }) });
-          return e2.addEventListenerCustom("inited", () => {
+          return e2.addEventListener("inited", () => {
             u2.init(AGENTX_SERVICE), s2.init(AGENTX_SERVICE), c2.init(AGENTX_SERVICE), l2.init(AGENTX_SERVICE), d2.init(AGENTX_SERVICE), f2.init(AGENTX_SERVICE), g2.init(AGENTX_SERVICE), r2.init(AGENTX_SERVICE), o2.init(AGENTX_SERVICE), h2.init(AGENTX_SERVICE), v2.init(AGENTX_SERVICE);
-          }), e2.addEventListenerCustom("cleaned", () => {
+          }), e2.addEventListener("cleaned", () => {
             u2.cleanup(), s2.cleanup(), c2.cleanup(), l2.cleanup(), d2.cleanup(), f2.cleanup(), g2.cleanup(), r2.cleanup(), h2.cleanup(), o2.cleanup(), v2.cleanup();
           }), { config: e2, logger: n2, monitoring: l2, shortcutKey: r2, actions: o2, agentContact: u2, agentStateInfo: s2, dialer: c2, screenpop: d2, i18n: h2, rtdwc: p3, postInteractions: g2, logout: f2, agentConfigJsApi: v2 };
         })();
@@ -15583,7 +15581,7 @@ const _setImmediate = ((setImmediateSupported, postMessageSupported) => {
     return setImmediate;
   }
   return postMessageSupported ? ((token, callbacks) => {
-    _global.addEventListenerCustom("message", ({ source, data }) => {
+    _global.addEventListener("message", ({ source, data }) => {
       if (source === _global && data === token) {
         callbacks.length && callbacks.shift()();
       }
@@ -16734,7 +16732,7 @@ const xhrAdapter = isXHRAdapterSupported && function(config) {
       flushUpload && flushUpload();
       flushDownload && flushDownload();
       _config.cancelToken && _config.cancelToken.unsubscribe(onCanceled);
-      _config.signal && _config.signal.removeEventListenerCustom("abort", onCanceled);
+      _config.signal && _config.signal.removeEventListener("abort", onCanceled);
     }
     let request = new XMLHttpRequest();
     request.open(_config.method.toUpperCase(), _config.url, true);
@@ -16816,12 +16814,12 @@ const xhrAdapter = isXHRAdapterSupported && function(config) {
     }
     if (onDownloadProgress) {
       [downloadThrottled, flushDownload] = progressEventReducer(onDownloadProgress, true);
-      request.addEventListenerCustom("progress", downloadThrottled);
+      request.addEventListener("progress", downloadThrottled);
     }
     if (onUploadProgress && request.upload) {
       [uploadThrottled, flushUpload] = progressEventReducer(onUploadProgress);
-      request.upload.addEventListenerCustom("progress", uploadThrottled);
-      request.upload.addEventListenerCustom("loadend", flushUpload);
+      request.upload.addEventListener("progress", uploadThrottled);
+      request.upload.addEventListener("loadend", flushUpload);
     }
     if (_config.cancelToken || _config.signal) {
       onCanceled = (cancel) => {
@@ -16834,7 +16832,7 @@ const xhrAdapter = isXHRAdapterSupported && function(config) {
       };
       _config.cancelToken && _config.cancelToken.subscribe(onCanceled);
       if (_config.signal) {
-        _config.signal.aborted ? onCanceled() : _config.signal.addEventListenerCustom("abort", onCanceled);
+        _config.signal.aborted ? onCanceled() : _config.signal.addEventListener("abort", onCanceled);
       }
     }
     const protocol = parseProtocol(_config.url);
@@ -16867,12 +16865,12 @@ const composeSignals = (signals, timeout) => {
         timer && clearTimeout(timer);
         timer = null;
         signals.forEach((signal2) => {
-          signal2.unsubscribe ? signal2.unsubscribe(onabort) : signal2.removeEventListenerCustom("abort", onabort);
+          signal2.unsubscribe ? signal2.unsubscribe(onabort) : signal2.removeEventListener("abort", onabort);
         });
         signals = null;
       }
     };
-    signals.forEach((signal2) => signal2.addEventListenerCustom("abort", onabort));
+    signals.forEach((signal2) => signal2.addEventListener("abort", onabort));
     const { signal } = controller;
     signal.unsubscribe = () => utils$1.asap(unsubscribe);
     return signal;
@@ -18196,11 +18194,11 @@ class ContactEventHandler {
         }, 200);
       };
       input.value = text;
-      input.addEventListenerCustom("blur", callback);
-      input.addEventListenerCustom("change", (ev) => {
+      input.addEventListener("blur", callback);
+      input.addEventListener("change", (ev) => {
         var _a;
         StoredData.log("change", ev);
-        (_a = ev.target) == null ? void 0 : _a.removeEventListenerCustom("blur", callback);
+        (_a = ev.target) == null ? void 0 : _a.removeEventListener("blur", callback);
       });
       StoredData.log("subject set", text);
     } catch (ex) {
@@ -19215,10 +19213,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         StoredData.log("skip setting event handlers");
         return;
       }
-      distExports.Desktop.screenpop.addEventListenerCustom("eScreenPop", (data) => {
+      distExports.Desktop.screenpop.addEventListener("eScreenPop", (data) => {
         StoredData.log("screenPop data", data);
       });
-      distExports.Desktop.agentStateInfo.addEventListenerCustom(
+      distExports.Desktop.agentStateInfo.addEventListener(
         "updated",
         (data) => {
           StoredData.log("agentStateInfo", data);
@@ -19247,7 +19245,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }
         }
       );
-      distExports.Desktop.agentContact.addEventListenerCustom(
+      distExports.Desktop.agentContact.addEventListener(
         "eAgentContact",
         (contact) => {
           try {
@@ -19257,7 +19255,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }
         }
       );
-      distExports.Desktop.agentContact.addEventListenerCustom(
+      distExports.Desktop.agentContact.addEventListener(
         "eAgentOfferContact",
         (contact) => {
           StoredData.log("eAgentOfferContact", contact);
@@ -19268,7 +19266,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }
         }
       );
-      distExports.Desktop.agentContact.addEventListenerCustom(
+      distExports.Desktop.agentContact.addEventListener(
         "eAgentOfferConsult",
         (contact) => {
           StoredData.log("eAgentOfferConsult", contact);
@@ -19279,7 +19277,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }
         }
       );
-      distExports.Desktop.agentContact.addEventListenerCustom(
+      distExports.Desktop.agentContact.addEventListener(
         "eAgentContactAssigned",
         (contact) => {
           StoredData.log("eAgentContactAssigned", contact);
@@ -19290,14 +19288,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }
         }
       );
-      distExports.Desktop.agentContact.addEventListenerCustom(
+      distExports.Desktop.agentContact.addEventListener(
         "eAgentContactEnded",
         (contact) => {
           StoredData.log("AgentContact eAgentContactEnded: ", contact);
           ContactEventHandler.handleContactRemoved(contact);
         }
       );
-      distExports.Desktop.agentContact.addEventListenerCustom(
+      distExports.Desktop.agentContact.addEventListener(
         "eAgentWrapup",
         (contact) => {
           StoredData.log("eAgentWrapup", contact);
@@ -19308,7 +19306,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }
         }
       );
-      distExports.Desktop.agentContact.addEventListenerCustom(
+      distExports.Desktop.agentContact.addEventListener(
         "eAgentConsultCreated",
         (contact) => {
           StoredData.log("eAgentConsultCreated", contact);
@@ -19332,7 +19330,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       ];
       eventsToSubscribe.forEach((eventName) => {
         try {
-          distExports.Desktop.agentContact.addEventListenerCustom(
+          distExports.Desktop.agentContact.addEventListener(
             eventName,
             (contact) => {
               try {

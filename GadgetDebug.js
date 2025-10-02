@@ -1,4 +1,4 @@
-/* process */
+/* geht des jetzt */
 
 (function(yn){typeof define=="function"&&define.amd?define(yn):yn()})(function(){"use strict";var gg=Object.defineProperty;var mg=(yn,ce,Rn)=>ce in yn?gg(yn,ce,{enumerable:!0,configurable:!0,writable:!0,value:Rn}):yn[ce]=Rn;var we=(yn,ce,Rn)=>mg(yn,typeof ce!="symbol"?ce+"":ce,Rn);/**
 * @vue/shared v3.5.13
